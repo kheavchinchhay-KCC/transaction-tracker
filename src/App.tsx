@@ -18,6 +18,7 @@ import { CheckCircle, AlertTriangle, AlertCircle, ShieldAlert, X, Menu, Landmark
 import { translations, getTranslation } from './utils/lang';
 import { isDateToday, getMissingTransactionsDateSummary } from './utils/dateHelper';
 import { getGoogleAccessToken, syncToGoogleSheets } from './utils/googleSheets';
+import { requestGoogleSheetsAccessToken } from './utils/googleAuth';
 
 export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -114,31 +115,8 @@ export default function App() {
   const [googlePhraseInput, setGooglePhraseInput] = useState('');
   const [googlePhraseError, setGooglePhraseError] = useState(false);
 
-  // Check and process Google Sheets redirect hash on load
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('access_token');
-      const expiresIn = params.get('expires_in');
-      if (accessToken) {
-        const expiryTime = Date.now() + parseInt(expiresIn || '3600', 10) * 1000;
-        localStorage.setItem('google-sheets-token', accessToken);
-        localStorage.setItem('google-sheets-token-expiry', String(expiryTime));
-        setIsGoogleConnected(true);
-        
-        // Clear hash from address bar
-        window.history.replaceState(null, '', window.location.pathname);
-        
-        triggerToast(lang === 'en' ? 'Successfully connected to Google Sheets!' : 'បានភ្ជាប់ទៅកាន់ Google Sheets ដោយជោគជ័យ!', 'success');
-        
-        // Auto save once connected!
-        setTimeout(() => {
-          handleSaveToGoogleSheetDirectly();
-        }, 800);
-      }
-    }
-  }, [lang]);
+  // Google OAuth uses Google's popup token flow. This avoids redirecting the SPA away
+  // from the Netlify site and therefore does not depend on a redirect URI.
 
   const handleToggleGroupByMerchant = () => {
     setGroupByMerchant((prev) => {
@@ -181,18 +159,34 @@ export default function App() {
     setIsGoogleModalOpen(true);
   };
 
-  const handleGooglePhraseSubmit = () => {
+  const handleGooglePhraseSubmit = async () => {
     if (googlePhraseInput.trim().toUpperCase() === 'I LOVE BONG CHHAY') {
       setIsGoogleModalOpen(false);
       if (googleActionType === 'CONNECT') {
-        const clientId = '890611774799-u07ta2jovf155gnoftipr67aqq1ooroj.apps.googleusercontent.com';
-        const redirectUri = window.location.origin + window.location.pathname;
-        const scopes = [
-          'https://www.googleapis.com/auth/spreadsheets',
-          'https://www.googleapis.com/auth/drive.file'
-        ].join(' ');
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scopes)}&prompt=consent`;
-        window.location.href = authUrl;
+        try {
+          const accessToken = await requestGoogleSheetsAccessToken();
+          if (!accessToken) {
+            throw new Error('Google authorization was not completed.');
+          }
+
+          setIsGoogleConnected(true);
+          triggerToast(
+            lang === 'en' ? 'Successfully connected to Google Sheets!' : 'បានភ្ជាប់ទៅកាន់ Google Sheets ដោយជោគជ័យ!',
+            'success'
+          );
+
+          // Auto save once connected. The spreadsheet belongs to the Google account
+          // that the user authorized in the popup.
+          setTimeout(() => {
+            void handleSaveToGoogleSheetDirectly();
+          }, 300);
+        } catch (err: any) {
+          console.error('Google authorization failed:', err);
+          triggerToast(
+            lang === 'en' ? `Google connection failed: ${err?.message || err}` : `ការភ្ជាប់ Google បរាជ័យ៖ ${err?.message || err}`,
+            'warn'
+          );
+        }
       } else if (googleActionType === 'DISCONNECT') {
         localStorage.removeItem('google-sheets-token');
         localStorage.removeItem('google-sheets-token-expiry');
