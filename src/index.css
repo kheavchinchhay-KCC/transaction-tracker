@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&family=Battambang:wght@400;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', 'Kantumruy Pro', 'Noto Sans Khmer', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', 'Battambang', 'Noto Sans Khmer', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html, body {
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Default System Dark Mode: Deep rich background #090d16 slightly darker than all Divs (#0f172a) */
+html.dark {
+  background-color: #090d16;
+  color: #f8fafc;
+}
+
+html.dark body {
+  background-color: #090d16;
+  color: #f8fafc;
+}
+
+html.dark main {
+  background-color: #090d16;
+}
+
+/* Scrollbar utilities to remove slide bar / scrollbar on PC */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Base custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Inputs in Dark Mode */
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+
+/* Modal boxes */
+html.dark .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.6);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Print Optimization */
+@media print {
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10pt !important;
+  }
+
+  /* Hide interactive controls and input panels when printing */
+  header,
+  #paste-bank-transactions-container,
+  #sms-instruction-guide-panel,
+  #filter-search-input,
+  #filter-type-select,
+  #filter-review-select,
+  #filter-source-select,
+  #filter-date-start,
+  #filter-date-end,
+  #btn-set-today,
+  #btn-clear-date,
+  #btn-export-excel,
+  #btn-export-csv,
+  #btn-print-report,
+  #btn-page-prev,
+  #btn-page-next,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Unconstrain table height and overflow for complete pagination on paper */
+  .overflow-x-auto, .overflow-y-auto {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 8.5pt !important;
+  }
+
+  th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 5px 8px !important;
+  }
+
+  td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 4px 8px !important;
+    color: #0f172a !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+
