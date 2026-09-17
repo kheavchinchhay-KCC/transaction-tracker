@@ -1,0 +1,6 @@
+{
+  "name": "transaction-tracker",
+  "description": "Paste, parse, and structure bank transaction messages, detect duplicates, and track your cash flow locally.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
